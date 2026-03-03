@@ -124,9 +124,9 @@ export const api = {
   updateProfile: (data: any) => request('/me', { method: 'PUT', body: JSON.stringify(data) }),
 
   // Alerts
-  getMyAlerts: (citySlug: string) => request(`/${citySlug}/alerts/mine`),
-  createAlert: (citySlug: string, keyword: string) => request(`/${citySlug}/alerts`, { method: 'POST', body: JSON.stringify({ keyword }) }),
-  deleteAlert: (citySlug: string, id: string) => request(`/${citySlug}/alerts/${id}`, { method: 'DELETE' }),
+  getMyAlerts: () => request('/me/alerts'),
+  createAlert: (citySlug: string, data: { alert_type: string; keywords: string }) => request(`/${citySlug}/alerts`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteAlert: (id: string) => request(`/me/alerts/${id}`, { method: 'DELETE' }),
 
   // File upload
   uploadFile: (formData: FormData) => request('/upload', { method: 'POST', body: formData }),
