@@ -22,7 +22,7 @@ export default function ManageEvents() {
 
   const handleApprove = async (id: string) => {
     try {
-      await api.approveEvent(citySlug!, id);
+      await api.approveEvent(id);
       fetchData();
     } catch { alert('Erro ao aprovar.'); }
   };
