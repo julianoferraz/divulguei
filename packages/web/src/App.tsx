@@ -1,5 +1,5 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './hooks/useAuth';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppFab from './components/WhatsAppFab';
