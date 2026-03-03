@@ -50,17 +50,17 @@ async function setCooldown(groupJid: string): Promise<void> {
 
 async function checkDailyLimit(groupJid: string): Promise<boolean> {
   const result = await query(
-    'SELECT daily_message_count, daily_limit FROM whatsapp_groups WHERE jid = $1',
+    'SELECT daily_response_count, max_daily_responses FROM whatsapp_groups WHERE group_jid = $1',
     [groupJid]
   );
   if (result.rows.length === 0) return false;
   const row = result.rows[0];
-  return (row.daily_message_count || 0) < (row.daily_limit || MAX_DAILY_MESSAGES);
+  return (row.daily_response_count || 0) < (row.max_daily_responses || MAX_DAILY_MESSAGES);
 }
 
 async function incrementDailyCount(groupJid: string): Promise<void> {
   await query(
-    'UPDATE whatsapp_groups SET daily_message_count = daily_message_count + 1 WHERE jid = $1',
+    'UPDATE whatsapp_groups SET daily_response_count = daily_response_count + 1 WHERE group_jid = $1',
     [groupJid]
   );
 }
@@ -68,18 +68,18 @@ async function incrementDailyCount(groupJid: string): Promise<void> {
 async function searchForRecommendation(text: string, cityId: string): Promise<string | null> {
   // Busca empresas relevantes
   const bizResult = await query(
-    `SELECT name, phone, whatsapp, neighborhood, short_description FROM businesses
+    `SELECT name, phone, whatsapp, neighborhood, description FROM businesses
      WHERE city_id = $1 AND is_active = true
-     AND (name ILIKE $2 OR short_description ILIKE $2 OR tags::text ILIKE $2)
-     ORDER BY is_featured DESC, views DESC LIMIT 3`,
+     AND (name ILIKE $2 OR description ILIKE $2)
+     ORDER BY is_featured DESC, views_count DESC LIMIT 3`,
     [cityId, `%${text}%`]
   );
 
   // Busca profissionais
   const profResult = await query(
-    `SELECT name, phone, whatsapp, specialty FROM professionals
+    `SELECT name, phone, whatsapp, services_offered FROM professionals
      WHERE city_id = $1 AND is_active = true
-     AND (name ILIKE $2 OR specialty ILIKE $2)
+     AND (name ILIKE $2 OR services_offered ILIKE $2)
      ORDER BY created_at DESC LIMIT 3`,
     [cityId, `%${text}%`]
   );
@@ -90,14 +90,14 @@ async function searchForRecommendation(text: string, cityId: string): Promise<st
 
   for (const b of bizResult.rows) {
     response += `\n🏪 *${b.name}*`;
-    if (b.short_description) response += ` — ${b.short_description}`;
+    if (b.description) response += ` — ${b.description.slice(0, 80)}`;
     if (b.phone) response += `\n   📞 ${b.phone}`;
     if (b.neighborhood) response += `\n   📍 ${b.neighborhood}`;
   }
 
   for (const p of profResult.rows) {
     response += `\n🔧 *${p.name}*`;
-    if (p.specialty) response += ` — ${p.specialty}`;
+    if (p.services_offered) response += ` — ${p.services_offered}`;
     if (p.phone) response += `\n   📞 ${p.phone}`;
   }
 
@@ -114,7 +114,7 @@ export async function handleGroupMessage(msg: proto.IWebMessageInfo, sock: WASoc
 
   // Check if group is registered and active
   const groupResult = await query(
-    'SELECT id, city_id, is_active FROM whatsapp_groups WHERE jid = $1 AND is_active = true',
+    'SELECT id, city_id, is_active FROM whatsapp_groups WHERE group_jid = $1 AND is_active = true',
     [groupJid]
   );
 
@@ -123,9 +123,9 @@ export async function handleGroupMessage(msg: proto.IWebMessageInfo, sock: WASoc
     try {
       const metadata = await sock.groupMetadata(groupJid);
       await query(
-        `INSERT INTO whatsapp_groups (city_id, jid, name, is_active)
+        `INSERT INTO whatsapp_groups (city_id, group_jid, group_name, is_active)
          VALUES ($1, $2, $3, true)
-         ON CONFLICT (jid) DO UPDATE SET name = $3`,
+         ON CONFLICT (group_jid) DO UPDATE SET group_name = $3`,
         [DEFAULT_CITY_ID, groupJid, metadata.subject]
       );
     } catch { /* ignore */ }
@@ -181,7 +181,7 @@ export async function handleGroupMessage(msg: proto.IWebMessageInfo, sock: WASoc
 
   // Log interaction
   await query(
-    `INSERT INTO interactions (city_id, module, query, source) VALUES ($1, 'group_message', $2, 'whatsapp_group')`,
+    `INSERT INTO interactions (city_id, type, query, source) VALUES ($1, 'group_response', $2, 'whatsapp_group')`,    
     [cityId, text.slice(0, 200)]
   ).catch(() => {});
 }
