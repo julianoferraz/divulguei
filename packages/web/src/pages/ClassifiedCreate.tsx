@@ -6,11 +6,11 @@ import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner } from '../components/UI';
 
 const TYPES = [
-  { value: 'sale', label: 'Venda' },
-  { value: 'rent', label: 'Aluguel' },
-  { value: 'exchange', label: 'Troca' },
-  { value: 'donation', label: 'Doação' },
-  { value: 'wanted', label: 'Procura-se' },
+  { value: 'sell', label: 'Venda' },
+  { value: 'buy', label: 'Procura-se' },
+  { value: 'rent_offer', label: 'Alugar' },
+  { value: 'rent_search', label: 'Procuro Aluguel' },
+  { value: 'service', label: 'Serviço' },
 ];
 
 export default function ClassifiedCreate() {
