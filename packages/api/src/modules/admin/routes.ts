@@ -155,10 +155,10 @@ export async function adminRoutes(app: FastifyInstance) {
   app.post('/api/admin/news-sources', { preHandler: [adminMiddleware] }, async (request, reply) => {
     const body = request.body as any;
     const result = await query(
-      `INSERT INTO news_sources (city_id, name, website_url, feed_url, feed_type, logo_url)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [body.city_id, body.name, body.website_url || null, body.feed_url || null,
-       body.feed_type || 'rss', body.logo_url || null]
+      `INSERT INTO news_sources (city_id, name, feed_url, feed_type, category)
+       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+      [body.city_id, body.name, body.feed_url || null,
+       body.feed_type || 'rss', body.category || null]
     );
     return reply.status(201).send(success(result.rows[0]));
   });

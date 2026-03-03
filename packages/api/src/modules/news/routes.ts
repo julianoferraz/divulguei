@@ -19,7 +19,7 @@ export async function newsRoutes(app: FastifyInstance) {
     const total = parseInt(countResult.rows[0].count, 10);
 
     const result = await query(
-      `SELECT na.*, ns.name as source_name, ns.logo_url as source_logo
+      `SELECT na.*, ns.name as source_name
        FROM news_articles na
        JOIN news_sources ns ON na.source_id = ns.id
        WHERE ${where}
@@ -34,7 +34,7 @@ export async function newsRoutes(app: FastifyInstance) {
   app.get('/api/:citySlug/news/:id', { preHandler: [cityContextMiddleware] }, async (request, reply) => {
     const { id } = request.params as any;
     const result = await query(
-      `SELECT na.*, ns.name as source_name, ns.logo_url as source_logo, ns.website_url as source_website
+      `SELECT na.*, ns.name as source_name
        FROM news_articles na
        JOIN news_sources ns ON na.source_id = ns.id
        WHERE na.id = $1 AND na.city_id = $2`,
