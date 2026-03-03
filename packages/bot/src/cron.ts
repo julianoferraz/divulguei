@@ -51,7 +51,7 @@ export function scheduleDailyReset() {
   cron.schedule('0 0 * * *', async () => {
     console.log('⏰ Resetting daily group message counters...');
     try {
-      await query('UPDATE whatsapp_groups SET daily_message_count = 0');
+      await query('UPDATE whatsapp_groups SET daily_response_count = 0');
       console.log('✅ Counters reset.');
     } catch (err) {
       console.error('Daily reset error:', err);
