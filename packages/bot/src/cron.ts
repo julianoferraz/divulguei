@@ -40,7 +40,7 @@ export function scheduleClassifiedExpiry() {
     } catch (err) {
       console.error('Classified expiry error:', err);
     }
-  });
+  }, CRON_TZ);
 }
 
 /**
@@ -56,7 +56,7 @@ export function scheduleDailyReset() {
     } catch (err) {
       console.error('Daily reset error:', err);
     }
-  });
+  }, CRON_TZ);
 }
 
 /**
@@ -108,7 +108,7 @@ export function scheduleNewsFetcher() {
     } catch (err) {
       console.error('News fetcher error:', err);
     }
-  });
+  }, CRON_TZ);
 }
 
 /**
@@ -176,7 +176,7 @@ export function scheduleAlertNotifier() {
     } catch (err) {
       console.error('Alert notifier error:', err);
     }
-  });
+  }, CRON_TZ);
 }
 
 export function startAllCronJobs() {
