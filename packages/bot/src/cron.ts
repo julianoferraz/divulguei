@@ -118,13 +118,10 @@ export function scheduleAlertNotifier() {
     console.log('🔔 Checking alerts...');
     try {
       const alerts = await query(
-        `SELECT a.id, a.keyword, a.user_id, a.city_id, u.phone
+        `SELECT a.id, a.keywords, a.user_id, a.city_id, u.phone
          FROM alerts a
          JOIN users u ON u.id = a.user_id
          WHERE a.is_active = true AND u.phone IS NOT NULL`
-    );
-    /* NOTE: keyword is called 'keywords' in the DB schema */
-    // TODO: rename 'keyword' in queries below if column name differs
       );
 
       const sock = getSocket();
