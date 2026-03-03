@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: divulguei
+      POSTGRES_USER: divulguei
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U divulguei"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./packages/api
+    environment:
+      DATABASE_URL: postgresql://divulguei:${DB_PASSWORD}@postgres:5432/divulguei
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build: ./packages/web
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: /api
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  bot:
+    build: ./packages/bot
+    environment:
+      API_URL: http://api:3001
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      BOT_PHONE_NUMBER: ${BOT_PHONE_NUMBER}
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - bot-auth:/app/auth
+    depends_on:
+      - api
+      - redis
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  bot-auth:
+  uploads:
