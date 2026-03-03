@@ -85,6 +85,7 @@ export const api = {
   },
   getClassifiedById: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`),
   createClassified: (citySlug: string, data: any) => request(`/${citySlug}/classifieds`, { method: 'POST', body: JSON.stringify(data) }),
+  improveClassifiedDescription: (citySlug: string, description: string) => request(`/${citySlug}/classifieds/improve`, { method: 'POST', body: JSON.stringify({ description }) }),
   updateClassified: (citySlug: string, id: string, data: any) => request(`/${citySlug}/classifieds/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteClassified: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`, { method: 'DELETE' }),
 

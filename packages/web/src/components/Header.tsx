@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Search, Menu, X, User, LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 export default function Header() {
   const { citySlug } = useParams();
   const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,7 +14,7 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim() && citySlug) {
-      window.location.href = `/${citySlug}?search=${encodeURIComponent(searchQuery)}`;
+      navigate(`/${citySlug}?search=${encodeURIComponent(searchQuery)}`);
     }
     setSearchOpen(false);
   };
