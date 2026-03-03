@@ -112,6 +112,12 @@ async function buildApp() {
       return reply.status(400).send({ success: false, error: 'Nenhum arquivo enviado' });
     }
 
+    // Validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimeTypes.includes(data.mimetype)) {
+      return reply.status(400).send({ success: false, error: 'Tipo de arquivo não permitido. Aceitos: JPG, PNG, WebP, GIF' });
+    }
+
     const fs = await import('fs');
     const path = await import('path');
     const { v4: uuidv4 } = await import('uuid');
@@ -121,11 +127,17 @@ async function buildApp() {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
+    const buffer = await data.toBuffer();
+
+    // Validate file size (max 5MB)
+    if (buffer.length > 5 * 1024 * 1024) {
+      return reply.status(400).send({ success: false, error: 'Arquivo muito grande. Máximo: 5MB' });
+    }
+
     const ext = path.extname(data.filename) || '.jpg';
     const filename = `${uuidv4()}${ext}`;
     const filepath = path.join(uploadDir, filename);
 
-    const buffer = await data.toBuffer();
     fs.writeFileSync(filepath, buffer);
 
     return reply.send({
