@@ -1,0 +1,21 @@
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function generateRandomCode(length: number = 6): string {
+  return Math.random().toString().slice(2, 2 + length);
+}
+
+export function parsePageParams(query: { page?: string; limit?: string }) {
+  const page = Math.max(1, parseInt(query.page || '1', 10));
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit || '20', 10)));
+  const offset = (page - 1) * limit;
+  return { page, limit, offset };
+}
