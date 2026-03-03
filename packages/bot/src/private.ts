@@ -72,10 +72,10 @@ Responda APENAS com a categoria.`,
 async function searchDatabase(searchText: string, cityId: string): Promise<string> {
   // Search businesses
   const bizResult = await query(
-    `SELECT name, phone, whatsapp, neighborhood, short_description FROM businesses
+    `SELECT name, phone, whatsapp, neighborhood, description FROM businesses
      WHERE city_id = $1 AND is_active = true
-     AND (name ILIKE $2 OR short_description ILIKE $2 OR tags::text ILIKE $2)
-     ORDER BY is_featured DESC, views DESC LIMIT 5`,
+     AND (name ILIKE $2 OR description ILIKE $2)
+     ORDER BY is_featured DESC, views_count DESC LIMIT 5`,
     [cityId, `%${searchText}%`]
   );
 
@@ -90,9 +90,9 @@ async function searchDatabase(searchText: string, cityId: string): Promise<strin
 
   // Search professionals
   const profResult = await query(
-    `SELECT name, phone, whatsapp, specialty FROM professionals
+    `SELECT name, phone, whatsapp, services_offered FROM professionals
      WHERE city_id = $1 AND is_active = true
-     AND (name ILIKE $2 OR specialty ILIKE $2 OR description ILIKE $2)
+     AND (name ILIKE $2 OR services_offered ILIKE $2 OR description ILIKE $2)
      ORDER BY created_at DESC LIMIT 5`,
     [cityId, `%${searchText}%`]
   );
@@ -103,7 +103,7 @@ async function searchDatabase(searchText: string, cityId: string): Promise<strin
     response += '🏪 *Empresas encontradas:*\n';
     for (const b of bizResult.rows) {
       response += `\n• *${b.name}*`;
-      if (b.short_description) response += ` — ${b.short_description}`;
+      if (b.description) response += ` — ${b.description.slice(0, 60)}`;
       if (b.phone) response += `\n  📞 ${b.phone}`;
       if (b.whatsapp) response += `\n  📱 wa.me/${b.whatsapp}`;
       if (b.neighborhood) response += `\n  📍 ${b.neighborhood}`;
@@ -126,7 +126,7 @@ async function searchDatabase(searchText: string, cityId: string): Promise<strin
     response += '\n🔧 *Profissionais:*\n';
     for (const p of profResult.rows) {
       response += `\n• *${p.name}*`;
-      if (p.specialty) response += ` — ${p.specialty}`;
+      if (p.services_offered) response += ` — ${p.services_offered.slice(0, 60)}`;
       if (p.phone) response += `\n  📞 ${p.phone}`;
       if (p.whatsapp) response += `\n  📱 wa.me/${p.whatsapp}`;
     }
@@ -138,7 +138,7 @@ async function searchDatabase(searchText: string, cityId: string): Promise<strin
 
   // Log the search interaction
   await query(
-    `INSERT INTO interactions (city_id, module, query, source) VALUES ($1, 'search', $2, 'whatsapp')`,
+    `INSERT INTO interactions (city_id, source, type, query) VALUES ($1, 'whatsapp_private', 'search', $2)`,
     [cityId, searchText]
   );
 
@@ -232,8 +232,8 @@ async function handleTextInput(jid: string, phone: string, text: string): Promis
       // Create classified
       try {
         await query(
-          `INSERT INTO classifieds (city_id, title, description, type, price, contact_phone, contact_name, status, source)
-           VALUES ($1, $2, $3, 'sale', $4, $5, $6, 'active', 'whatsapp')`,
+          `INSERT INTO classifieds (city_id, title, description, type, price, contact_phone, contact_name, status)
+           VALUES ($1, $2, $3, 'sell', $4, $5, $6, 'active')`,
           [DEFAULT_CITY_ID, data.title, data.description, data.price, data.contact_phone, phone]
         );
         await clearSession(phone);
@@ -281,13 +281,13 @@ async function handleTextInput(jid: string, phone: string, text: string): Promis
         // Find or create user
         let userResult = await query('SELECT id FROM users WHERE phone = $1', [phone]);
         if (userResult.rows.length === 0) {
-          userResult = await query('INSERT INTO users (phone, role) VALUES ($1, $2) RETURNING id', [phone, 'user']);
+          userResult = await query('INSERT INTO users (phone, role) VALUES ($1, $2) RETURNING id', [phone, 'resident']);
         }
         const userId = userResult.rows[0].id;
 
         await query(
-          'INSERT INTO alerts (city_id, user_id, keyword) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-          [DEFAULT_CITY_ID, userId, keyword]
+          'INSERT INTO alerts (city_id, user_id, user_phone, alert_type, keywords) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+          [DEFAULT_CITY_ID, userId, phone, 'classified', keyword]
         );
         await sendText(jid, `🔔 Alerta criado para "*${keyword}*"!\n\nVou te avisar quando algo novo aparecer.`);
       } else {
