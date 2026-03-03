@@ -8,12 +8,12 @@ import * as os from 'os';
  * Transcribe audio message using OpenAI Whisper
  */
 export async function transcribeAudio(msg: proto.IWebMessageInfo, sock: WASocket): Promise<string | null> {
+  const tmpFile = path.join(os.tmpdir(), `audio_${Date.now()}.ogg`);
   try {
     const buffer = await downloadMediaMessage(msg, 'buffer', {});
     if (!buffer) return null;
 
     // Write to temp file
-    const tmpFile = path.join(os.tmpdir(), `audio_${Date.now()}.ogg`);
     fs.writeFileSync(tmpFile, buffer as Buffer);
 
     const transcription = await openai.audio.transcriptions.create({
@@ -22,13 +22,13 @@ export async function transcribeAudio(msg: proto.IWebMessageInfo, sock: WASocket
       language: 'pt',
     });
 
-    // Cleanup
-    fs.unlinkSync(tmpFile);
-
     return transcription.text || null;
   } catch (err) {
     console.error('Whisper transcription error:', err);
     return null;
+  } finally {
+    // Always cleanup temp file
+    try { if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); } catch { /* ignore */ }
   }
 }
 
