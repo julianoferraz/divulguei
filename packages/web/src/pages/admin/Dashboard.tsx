@@ -13,11 +13,11 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!citySlug) return;
-    api.getAdminDashboard(citySlug)
+    api.getAdminDashboard()
       .then(r => setStats(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [citySlug]);
+  }, []);
 
   if (!user || user.role !== 'admin') {
     return (
