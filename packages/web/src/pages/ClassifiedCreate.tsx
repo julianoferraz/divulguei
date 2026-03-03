@@ -137,7 +137,7 @@ export default function ClassifiedCreate() {
         </div>
 
         {/* Price */}
-        {form.type !== 'donation' && form.type !== 'wanted' && (
+        {form.type !== 'buy' && form.type !== 'rent_search' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
             <input type="number" step="0.01" min="0" value={form.price}
