@@ -10,20 +10,19 @@ export default function ManageGroups() {
   const [loading, setLoading] = useState(true);
 
   const fetchData = () => {
-    if (!citySlug) return;
     setLoading(true);
-    api.getAdminGroups(citySlug)
+    api.getAdminGroups()
       .then(r => setGroups(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchData(); }, [citySlug]);
+  useEffect(() => { fetchData(); }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Remover este grupo?')) return;
     try {
-      await api.deleteAdminGroup(citySlug!, id);
+      await api.deleteAdminGroup(id);
       fetchData();
     } catch { alert('Erro ao remover.'); }
   };

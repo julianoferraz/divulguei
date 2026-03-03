@@ -11,19 +11,18 @@ export default function ManageClaims() {
   const [loading, setLoading] = useState(true);
 
   const fetchData = () => {
-    if (!citySlug) return;
     setLoading(true);
-    api.getAdminClaims(citySlug)
+    api.getAdminClaims()
       .then(r => setClaims(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchData(); }, [citySlug]);
+  useEffect(() => { fetchData(); }, []);
 
   const handleAction = async (claimId: string, action: 'approved' | 'rejected') => {
     try {
-      await api.updateAdminClaim(citySlug!, claimId, action);
+      await api.updateAdminClaim(claimId, action);
       fetchData();
     } catch { alert('Erro ao processar.'); }
   };
