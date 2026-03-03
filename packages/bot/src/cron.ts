@@ -3,6 +3,8 @@ import RSSParser from 'rss-parser';
 import { query, redis } from './config.js';
 import { sendText, getSocket } from './connection.js';
 
+const CRON_TZ = { timezone: 'America/Recife' };
+
 const parser = new RSSParser();
 const DEFAULT_CITY_ID = process.env.DEFAULT_CITY_ID || '';
 
@@ -131,7 +133,7 @@ export function scheduleAlertNotifier() {
       const since = lastCheck ? new Date(lastCheck) : new Date(Date.now() - 30 * 60 * 1000);
 
       for (const alert of alerts.rows) {
-        const keyword = `%${alert.keyword}%`;
+        const keyword = `%${alert.keywords}%`;
 
         // Check new classifieds
         const newClassifieds = await query(
@@ -163,7 +165,7 @@ export function scheduleAlertNotifier() {
           try {
             await sendText(
               `${alert.phone}@s.whatsapp.net`,
-              `🔔 *Alerta: "${alert.keyword}"*\n\nNovas publicações encontradas:\n\n${items.join('\n')}\n\n🌐 Veja mais em divulguei.online`
+              `🔔 *Alerta: "${alert.keywords}"*\n\nNovas publicações encontradas:\n\n${items.join('\n')}\n\n🌐 Veja mais em divulguei.online`
             );
           } catch { /* ignore */ }
         }
