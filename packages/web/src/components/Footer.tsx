@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="font-semibold text-white mb-2">Fale conosco</h4>
-            <a href="https://wa.me/5587999999999" target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || '5587999999999'}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-green-400 hover:text-green-300 text-sm">
               <MessageCircle size={16} /> WhatsApp do Bot
             </a>

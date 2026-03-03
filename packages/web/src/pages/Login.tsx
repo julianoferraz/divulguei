@@ -43,7 +43,7 @@ export default function Login() {
       const res = await api.verifyWhatsAppCode(cleanPhone, code);
       if (res.data?.token) {
         login(res.data.token, res.data.user);
-        navigate(`/${citySlug || 'floresta-pe'}`, { replace: true });
+        navigate(`/${citySlug || 'floresta'}`, { replace: true });
       }
     } catch (err: any) {
       setError(err?.message || 'Código inválido ou expirado.');
