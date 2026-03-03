@@ -109,6 +109,9 @@ export default function App() {
           <Route path="grupos" element={<AdminGroups />} />
           <Route path="reivindicacoes" element={<AdminClaims />} />
         </Route>
+
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );
