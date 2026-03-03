@@ -125,6 +125,16 @@ export async function classifiedsRoutes(app: FastifyInstance) {
     return reply.status(201).send(success(result.rows[0]));
   });
 
+  // AI improve description preview (no creation)
+  app.post('/api/:citySlug/classifieds/improve', { preHandler: [cityContextMiddleware, authMiddleware] }, async (request, reply) => {
+    const { description } = request.body as any;
+    if (!description || typeof description !== 'string') {
+      return reply.status(400).send(error('Descrição é obrigatória'));
+    }
+    const improved = await improveClassifiedDescription(description);
+    return reply.send(success({ description: improved }));
+  });
+
   // Update classified
   app.put('/api/:citySlug/classifieds/:id', { preHandler: [cityContextMiddleware, authMiddleware] }, async (request, reply) => {
     const { id } = request.params as any;
