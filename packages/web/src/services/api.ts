@@ -46,12 +46,6 @@ export const api = {
 
   delete: <T = any>(path: string) => request<T>(path, { method: 'DELETE' }),
 
-  upload: async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return request('/upload', { method: 'POST', body: formData });
-  },
-
   // Auth
   requestWhatsAppCode: (phone: string) => request('/auth/whatsapp/request-code', { method: 'POST', body: JSON.stringify({ phone }) }),
   verifyWhatsAppCode: (phone: string, code: string) => request('/auth/whatsapp/verify-code', { method: 'POST', body: JSON.stringify({ phone, code }) }),
