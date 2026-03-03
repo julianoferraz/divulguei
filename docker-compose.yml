@@ -62,15 +62,26 @@ services:
   bot:
     build: ./packages/bot
     environment:
-      API_URL: http://api:3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: divulguei
+      DB_USER: divulguei
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       BOT_PHONE_NUMBER: ${BOT_PHONE_NUMBER}
-      REDIS_URL: redis://redis:6379
+      ADMIN_PHONE: ${ADMIN_PHONE}
+      DEFAULT_CITY_ID: ${DEFAULT_CITY_ID}
+      BOT_AUTH_DIR: /app/auth
+      NODE_ENV: production
     volumes:
       - bot-auth:/app/auth
     depends_on:
-      - api
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
