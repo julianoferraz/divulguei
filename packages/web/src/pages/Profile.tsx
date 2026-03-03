@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, User, Bell, LogOut } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
@@ -14,9 +14,8 @@ export default function Profile() {
   const [newAlert, setNewAlert] = useState('');
 
   useEffect(() => {
-    if (!citySlug) return;
-    api.getMyAlerts(citySlug).then(r => setAlerts(r.data || [])).catch(() => {});
-  }, [citySlug]);
+    api.getMyAlerts().then(r => setAlerts(r.data || [])).catch(() => {});
+  }, []);
 
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
@@ -38,9 +37,9 @@ export default function Profile() {
   const handleCreateAlert = async () => {
     if (!newAlert.trim() || !citySlug) return;
     try {
-      await api.createAlert(citySlug, newAlert.trim());
+      await api.createAlert(citySlug, { alert_type: 'classified', keywords: newAlert.trim() });
       setNewAlert('');
-      const r = await api.getMyAlerts(citySlug);
+      const r = await api.getMyAlerts();
       setAlerts(r.data || []);
     } catch {
       alert('Erro ao criar alerta.');
@@ -48,9 +47,8 @@ export default function Profile() {
   };
 
   const handleDeleteAlert = async (id: string) => {
-    if (!citySlug) return;
     try {
-      await api.deleteAlert(citySlug, id);
+      await api.deleteAlert(id);
       setAlerts(prev => prev.filter(a => a.id !== id));
     } catch {
       alert('Erro ao remover.');
@@ -63,8 +61,7 @@ export default function Profile() {
   };
 
   if (!user) {
-    navigate(`/${citySlug}/login`);
-    return null;
+    return <Navigate to={`/${citySlug}/login`} replace />;
   }
 
   return (
@@ -119,7 +116,7 @@ export default function Profile() {
           <div className="space-y-2">
             {alerts.map((alert: any) => (
               <div key={alert.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                <span className="text-sm text-gray-700">{alert.keyword}</span>
+                <span className="text-sm text-gray-700">{alert.keywords || alert.alert_type}</span>
                 <button onClick={() => handleDeleteAlert(alert.id)} className="text-xs text-red-500 hover:underline">
                   Remover
                 </button>
