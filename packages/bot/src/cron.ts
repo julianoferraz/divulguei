@@ -66,27 +66,27 @@ export function scheduleNewsFetcher() {
     console.log('📰 Fetching news from RSS sources...');
     try {
       const sources = await query(
-        'SELECT id, name, url, city_id FROM news_sources WHERE is_active = true'
+        'SELECT id, name, feed_url, city_id FROM news_sources WHERE is_active = true AND feed_url IS NOT NULL'
       );
 
       for (const source of sources.rows) {
         try {
-          const feed = await parser.parseURL(source.url);
+          const feed = await parser.parseURL(source.feed_url);
 
           for (const item of feed.items.slice(0, 10)) {
             if (!item.title || !item.link) continue;
 
             // Check if article already exists
             const existing = await query(
-              'SELECT id FROM news_articles WHERE url = $1',
+              'SELECT id FROM news_articles WHERE original_url = $1',
               [item.link]
             );
             if (existing.rows.length > 0) continue;
 
             await query(
-              `INSERT INTO news_articles (source_id, city_id, title, summary, url, image_url, published_at)
+              `INSERT INTO news_articles (source_id, city_id, title, summary, original_url, image_url, published_at)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
-               ON CONFLICT DO NOTHING`,
+               ON CONFLICT (original_url) DO NOTHING`,
               [
                 source.id,
                 source.city_id,
@@ -122,6 +122,9 @@ export function scheduleAlertNotifier() {
          FROM alerts a
          JOIN users u ON u.id = a.user_id
          WHERE a.is_active = true AND u.phone IS NOT NULL`
+    );
+    /* NOTE: keyword is called 'keywords' in the DB schema */
+    // TODO: rename 'keyword' in queries below if column name differs
       );
 
       const sock = getSocket();
@@ -146,7 +149,7 @@ export function scheduleAlertNotifier() {
         const newBusinesses = await query(
           `SELECT name FROM businesses
            WHERE city_id = $1 AND is_active = true AND created_at > $2
-           AND (name ILIKE $3 OR short_description ILIKE $3)
+           AND (name ILIKE $3 OR description ILIKE $3)
            LIMIT 3`,
           [alert.city_id, since, keyword]
         );

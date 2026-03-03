@@ -181,6 +181,7 @@ async function searchProfessionals(cityId: string, intent: IntentResult) {
   if (intent.filters.neighborhood) {
     where += ` AND p.neighborhood ILIKE $${idx}`;
     params.push(`%${intent.filters.neighborhood}%`);
+    idx++;
   }
 
   const result = await query(

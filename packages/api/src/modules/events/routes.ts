@@ -127,7 +127,7 @@ export async function eventsRoutes(app: FastifyInstance) {
     if (existing.rows.length === 0) return reply.status(404).send(error('Evento não encontrado'));
     if (user.role !== 'admin' && existing.rows[0].user_id !== user.id) return reply.status(403).send(error('Sem permissão'));
 
-    await query('DELETE FROM events WHERE id = $1', [id]);
+    await query("UPDATE events SET is_approved = false WHERE id = $1", [id]);
     return reply.send(success({ deleted: true }));
   });
 }

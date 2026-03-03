@@ -163,11 +163,4 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.status(201).send(success(result.rows[0]));
   });
 
-  // Admin: manage subscriptions
-  app.get('/api/admin/subscriptions', { preHandler: [adminMiddleware] }, async (request, reply) => {
-    const result = await query(
-      `SELECT s.*, b.name as business_name FROM subscriptions s JOIN businesses b ON s.business_id = b.id ORDER BY s.created_at DESC`
-    );
-    return reply.send(success(result.rows));
-  });
 }

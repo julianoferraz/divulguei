@@ -8,7 +8,7 @@ export const db = new Pool({
   port: Number(process.env.DB_PORT) || 5432,
   database: process.env.DB_NAME || 'divulguei',
   user: process.env.DB_USER || 'divulguei',
-  password: process.env.DB_PASSWORD || 'divulguei123',
+  password: process.env.DB_PASSWORD || '',
   max: 10,
 });
 

@@ -10,7 +10,12 @@ export function slugify(text: string): string {
 }
 
 export function generateRandomCode(length: number = 6): string {
-  return Math.random().toString().slice(2, 2 + length);
+  const { randomInt } = require('crypto');
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += randomInt(0, 10).toString();
+  }
+  return code;
 }
 
 export function parsePageParams(query: { page?: string; limit?: string }) {

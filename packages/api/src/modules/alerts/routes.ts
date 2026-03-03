@@ -24,7 +24,7 @@ export async function alertsRoutes(app: FastifyInstance) {
     const result = await query(
       `INSERT INTO alerts (city_id, user_id, user_phone, alert_type, keywords, category_id, filters)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [request.cityId, user.id, user.phone || '', data.alert_type,
+      [request.cityId, user.id, user.phone || null, data.alert_type,
        data.keywords || null, data.category_id || null,
        data.filters ? JSON.stringify(data.filters) : null]
     );
