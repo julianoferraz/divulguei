@@ -103,7 +103,7 @@ export const api = {
     return request(`/${citySlug}/events${qs}`);
   },
   getEventById: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`),
-  approveEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}/approve`, { method: 'PATCH' }),
+  approveEvent: (id: string) => request(`/admin/events/${id}/approve`, { method: 'PUT' }),
   deleteEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`, { method: 'DELETE' }),
 
   // News
