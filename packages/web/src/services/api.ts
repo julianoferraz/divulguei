@@ -53,8 +53,8 @@ export const api = {
   },
 
   // Auth
-  requestCode: (phone: string) => request('/auth/whatsapp/request-code', { method: 'POST', body: JSON.stringify({ phone }) }),
-  verifyCode: (phone: string, code: string) => request('/auth/whatsapp/verify-code', { method: 'POST', body: JSON.stringify({ phone, code }) }),
+  requestWhatsAppCode: (phone: string) => request('/auth/whatsapp/request-code', { method: 'POST', body: JSON.stringify({ phone }) }),
+  verifyWhatsAppCode: (phone: string, code: string) => request('/auth/whatsapp/verify-code', { method: 'POST', body: JSON.stringify({ phone, code }) }),
   googleAuth: (token: string) => request('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
 
   // Cities
@@ -62,22 +62,31 @@ export const api = {
   getCity: (slug: string) => request(`/cities/${slug}`),
 
   // Categories
-  getCategories: (type?: string) => request(`/categories${type ? `?type=${type}` : ''}`),
+  getCategories: (params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/categories${qs}`);
+  },
 
   // Businesses
   getBusinesses: (citySlug: string, params?: Record<string, string>) => {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request(`/${citySlug}/businesses${qs}`);
   },
-  getBusiness: (citySlug: string, slug: string) => request(`/${citySlug}/businesses/${slug}`),
+  getBusinessBySlug: (citySlug: string, slug: string) => request(`/${citySlug}/businesses/${slug}`),
+  createBusiness: (citySlug: string, data: any) => request(`/${citySlug}/businesses`, { method: 'POST', body: JSON.stringify(data) }),
+  updateBusiness: (citySlug: string, id: string, data: any) => request(`/${citySlug}/businesses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBusiness: (citySlug: string, id: string) => request(`/${citySlug}/businesses/${id}`, { method: 'DELETE' }),
+  claimBusiness: (citySlug: string, id: string, message: string) => request(`/${citySlug}/businesses/${id}/claim`, { method: 'POST', body: JSON.stringify({ message }) }),
 
   // Classifieds
   getClassifieds: (citySlug: string, params?: Record<string, string>) => {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request(`/${citySlug}/classifieds${qs}`);
   },
-  getClassified: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`),
+  getClassifiedById: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`),
   createClassified: (citySlug: string, data: any) => request(`/${citySlug}/classifieds`, { method: 'POST', body: JSON.stringify(data) }),
+  updateClassified: (citySlug: string, id: string, data: any) => request(`/${citySlug}/classifieds/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteClassified: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`, { method: 'DELETE' }),
 
   // Professionals
   getProfessionals: (citySlug: string, params?: Record<string, string>) => {
@@ -98,7 +107,9 @@ export const api = {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request(`/${citySlug}/events${qs}`);
   },
-  getEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`),
+  getEventById: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`),
+  approveEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}/approve`, { method: 'PATCH' }),
+  deleteEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`, { method: 'DELETE' }),
 
   // News
   getNews: (citySlug: string, params?: Record<string, string>) => {
@@ -115,10 +126,20 @@ export const api = {
 
   // Profile
   getMe: () => request('/me'),
-  updateMe: (data: any) => request('/me', { method: 'PUT', body: JSON.stringify(data) }),
+  updateProfile: (data: any) => request('/me', { method: 'PUT', body: JSON.stringify(data) }),
 
   // Alerts
-  getMyAlerts: () => request('/me/alerts'),
-  createAlert: (citySlug: string, data: any) => request(`/${citySlug}/alerts`, { method: 'POST', body: JSON.stringify(data) }),
-  deleteAlert: (id: string) => request(`/me/alerts/${id}`, { method: 'DELETE' }),
+  getMyAlerts: (citySlug: string) => request(`/${citySlug}/alerts/mine`),
+  createAlert: (citySlug: string, keyword: string) => request(`/${citySlug}/alerts`, { method: 'POST', body: JSON.stringify({ keyword }) }),
+  deleteAlert: (citySlug: string, id: string) => request(`/${citySlug}/alerts/${id}`, { method: 'DELETE' }),
+
+  // File upload
+  uploadFile: (formData: FormData) => request('/upload', { method: 'POST', body: formData }),
+
+  // Admin
+  getAdminDashboard: (citySlug: string) => request(`/${citySlug}/admin/dashboard`),
+  getAdminGroups: (citySlug: string) => request(`/${citySlug}/admin/groups`),
+  deleteAdminGroup: (citySlug: string, id: string) => request(`/${citySlug}/admin/groups/${id}`, { method: 'DELETE' }),
+  getAdminClaims: (citySlug: string) => request(`/${citySlug}/admin/claims`),
+  updateAdminClaim: (citySlug: string, id: string, status: string) => request(`/${citySlug}/admin/claims/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 };
