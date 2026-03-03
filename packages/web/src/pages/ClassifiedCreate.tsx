@@ -24,7 +24,7 @@ export default function ClassifiedCreate() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    type: 'sale',
+    type: 'sell',
     category_id: '',
     price: '',
     neighborhood: '',
