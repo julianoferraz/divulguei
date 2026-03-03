@@ -1,0 +1,124 @@
+const API_BASE = '/api';
+
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  pagination?: { total: number; page: number; limit: number; pages: number };
+}
+
+async function request<T = any>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  const token = localStorage.getItem('divulguei_token');
+
+  const headers: Record<string, string> = {
+    ...((options.headers as Record<string, string>) || {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao conectar com o servidor');
+  }
+
+  return data;
+}
+
+export const api = {
+  get: <T = any>(path: string) => request<T>(path),
+
+  post: <T = any>(path: string, body: any) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+
+  put: <T = any>(path: string, body: any) =>
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+
+  patch: <T = any>(path: string, body: any) =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+
+  delete: <T = any>(path: string) => request<T>(path, { method: 'DELETE' }),
+
+  upload: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return request('/upload', { method: 'POST', body: formData });
+  },
+
+  // Auth
+  requestCode: (phone: string) => request('/auth/whatsapp/request-code', { method: 'POST', body: JSON.stringify({ phone }) }),
+  verifyCode: (phone: string, code: string) => request('/auth/whatsapp/verify-code', { method: 'POST', body: JSON.stringify({ phone, code }) }),
+  googleAuth: (token: string) => request('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
+
+  // Cities
+  getCities: () => request('/cities'),
+  getCity: (slug: string) => request(`/cities/${slug}`),
+
+  // Categories
+  getCategories: (type?: string) => request(`/categories${type ? `?type=${type}` : ''}`),
+
+  // Businesses
+  getBusinesses: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/businesses${qs}`);
+  },
+  getBusiness: (citySlug: string, slug: string) => request(`/${citySlug}/businesses/${slug}`),
+
+  // Classifieds
+  getClassifieds: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/classifieds${qs}`);
+  },
+  getClassified: (citySlug: string, id: string) => request(`/${citySlug}/classifieds/${id}`),
+  createClassified: (citySlug: string, data: any) => request(`/${citySlug}/classifieds`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Professionals
+  getProfessionals: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/professionals${qs}`);
+  },
+  getProfessional: (citySlug: string, id: string) => request(`/${citySlug}/professionals/${id}`),
+
+  // Jobs
+  getJobs: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/jobs${qs}`);
+  },
+  getJob: (citySlug: string, id: string) => request(`/${citySlug}/jobs/${id}`),
+
+  // Events
+  getEvents: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/events${qs}`);
+  },
+  getEvent: (citySlug: string, id: string) => request(`/${citySlug}/events/${id}`),
+
+  // News
+  getNews: (citySlug: string, params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/${citySlug}/news${qs}`);
+  },
+
+  // Public Services
+  getPublicServices: (citySlug: string) => request(`/${citySlug}/public-services`),
+
+  // Search
+  search: (citySlug: string, query: string, source: string = 'web') =>
+    request(`/${citySlug}/search`, { method: 'POST', body: JSON.stringify({ query, source }) }),
+
+  // Profile
+  getMe: () => request('/me'),
+  updateMe: (data: any) => request('/me', { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Alerts
+  getMyAlerts: () => request('/me/alerts'),
+  createAlert: (citySlug: string, data: any) => request(`/${citySlug}/alerts`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteAlert: (id: string) => request(`/me/alerts/${id}`, { method: 'DELETE' }),
+};
