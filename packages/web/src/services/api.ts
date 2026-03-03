@@ -132,9 +132,9 @@ export const api = {
   uploadFile: (formData: FormData) => request('/upload', { method: 'POST', body: formData }),
 
   // Admin
-  getAdminDashboard: (citySlug: string) => request(`/${citySlug}/admin/dashboard`),
-  getAdminGroups: (citySlug: string) => request(`/${citySlug}/admin/groups`),
-  deleteAdminGroup: (citySlug: string, id: string) => request(`/${citySlug}/admin/groups/${id}`, { method: 'DELETE' }),
-  getAdminClaims: (citySlug: string) => request(`/${citySlug}/admin/claims`),
-  updateAdminClaim: (citySlug: string, id: string, status: string) => request(`/${citySlug}/admin/claims/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getAdminDashboard: () => request('/admin/dashboard'),
+  getAdminGroups: () => request('/admin/groups'),
+  deleteAdminGroup: (id: string) => request(`/admin/groups/${id}`, { method: 'DELETE' }),
+  getAdminClaims: () => request('/admin/claims'),
+  updateAdminClaim: (id: string, status: string) => request(`/admin/claims/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
 };
