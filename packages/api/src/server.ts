@@ -65,7 +65,7 @@ async function buildApp() {
   }));
 
   // Global error handler
-  app.setErrorHandler((error, request, reply) => {
+  app.setErrorHandler((error: any, request, reply) => {
     app.log.error(error);
 
     if (error.validation) {
