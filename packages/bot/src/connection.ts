@@ -1,7 +1,6 @@
 import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
-  makeInMemoryStore,
   WASocket,
   BaileysEventMap,
   proto,
@@ -14,8 +13,6 @@ const logger = pino({ level: 'warn' });
 
 let sock: WASocket | null = null;
 const AUTH_DIR = process.env.BOT_AUTH_DIR || './auth_info';
-
-const store = makeInMemoryStore({ logger });
 
 export async function startConnection(
   onMessage: (msg: proto.IWebMessageInfo, sock: WASocket) => void,
