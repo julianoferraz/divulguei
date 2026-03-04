@@ -1,16 +1,17 @@
 version: '3.8'
 
 services:
-  postgres:
+  divulguei-postgres:
     image: postgres:16-alpine
+    container_name: divulguei-postgres
     environment:
       POSTGRES_DB: divulguei
       POSTGRES_USER: divulguei
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - divulguei-pgdata:/var/lib/postgresql/data
+    expose:
+      - "5432"
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U divulguei"]
@@ -18,10 +19,11 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
+  divulguei-redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    container_name: divulguei-redis
+    expose:
+      - "6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -29,45 +31,46 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  divulguei-api:
     build: ./packages/api
+    container_name: divulguei-api
     environment:
-      DATABASE_URL: postgresql://divulguei:${DB_PASSWORD}@postgres:5432/divulguei
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://divulguei:${DB_PASSWORD}@divulguei-postgres:5432/divulguei
+      REDIS_URL: redis://divulguei-redis:6379
       JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       NODE_ENV: production
       PORT: 3001
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3011:3001"
     volumes:
-      - uploads:/app/uploads
+      - divulguei-uploads:/app/uploads
     depends_on:
-      postgres:
+      divulguei-postgres:
         condition: service_healthy
-      redis:
+      divulguei-redis:
         condition: service_healthy
     restart: unless-stopped
 
-  web:
+  divulguei-web:
     build: ./packages/web
+    container_name: divulguei-web
     ports:
-      - "3000:3000"
-    environment:
-      VITE_API_URL: /api
+      - "127.0.0.1:3012:3000"
     depends_on:
-      - api
+      - divulguei-api
     restart: unless-stopped
 
-  bot:
+  divulguei-bot:
     build: ./packages/bot
+    container_name: divulguei-bot
     environment:
-      DB_HOST: postgres
+      DB_HOST: divulguei-postgres
       DB_PORT: 5432
       DB_NAME: divulguei
       DB_USER: divulguei
       DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_HOST: redis
+      REDIS_HOST: divulguei-redis
       REDIS_PORT: 6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       BOT_PHONE_NUMBER: ${BOT_PHONE_NUMBER}
@@ -76,15 +79,19 @@ services:
       BOT_AUTH_DIR: /app/auth
       NODE_ENV: production
     volumes:
-      - bot-auth:/app/auth
+      - divulguei-bot-auth:/app/auth
     depends_on:
-      postgres:
+      divulguei-postgres:
         condition: service_healthy
-      redis:
+      divulguei-redis:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  pgdata:
-  bot-auth:
-  uploads:
+  divulguei-pgdata:
+  divulguei-bot-auth:
+  divulguei-uploads:
+
+networks:
+  default:
+    name: divulguei-network
