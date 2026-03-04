@@ -7,4 +7,4 @@ COPY package.json ./
 RUN npm install
 COPY . .
 
-CMD ["node", "--loader", "tsx", "src/index.ts"]
+CMD ["node", "--import", "tsx", "src/index.ts"]
