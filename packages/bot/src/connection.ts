@@ -28,8 +28,6 @@ export async function startConnection(
     syncFullHistory: false,
   });
 
-  store.bind(sock.ev);
-
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', async (update) => {
