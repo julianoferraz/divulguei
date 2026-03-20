@@ -13,6 +13,11 @@ services:
     expose:
       - "5432"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U divulguei"]
       interval: 10s
@@ -25,6 +30,11 @@ services:
     expose:
       - "6379"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.25'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -51,6 +61,14 @@ services:
       divulguei-redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    networks:
+      - default
+      - npm
 
   divulguei-web:
     build: ./packages/web
@@ -60,6 +78,14 @@ services:
     depends_on:
       - divulguei-api
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    networks:
+      - default
+      - npm
 
   divulguei-bot:
     build: ./packages/bot
@@ -86,6 +112,11 @@ services:
       divulguei-redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.50'
 
 volumes:
   divulguei-pgdata:
@@ -95,3 +126,5 @@ volumes:
 networks:
   default:
     name: divulguei-network
+  npm:
+    external: true
